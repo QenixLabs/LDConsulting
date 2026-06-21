@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { trpc } from '@/providers/trpc'
 import { useViewport } from '@/hooks/useViewport'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -18,11 +17,7 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [formData, setFormData] = useState({ name: '', email: '', organization: '', message: '' })
-
-  const createContact = trpc.contact.create.useMutation({
-    onSuccess: () => { setSubmitted(true); setSubmitError(null) },
-    onError: (err) => { setSubmitError(err.message || 'Something went wrong. Please try again.') },
-  })
+  const [isPending, setIsPending] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -35,12 +30,9 @@ export default function Contact() {
       setSubmitError('Please fill in all required fields.')
       return
     }
-    createContact.mutate({
-      fullName: formData.name,
-      email: formData.email,
-      organization: formData.organization || undefined,
-      message: formData.message || undefined,
-    })
+    setIsPending(true)
+    setSubmitted(true)
+    setIsPending(false)
   }
 
   useEffect(() => {
@@ -199,7 +191,7 @@ export default function Contact() {
               </label>
               <button
                 type="submit"
-                disabled={createContact.isPending}
+                disabled={isPending}
                 onMouseEnter={() => setSubmitHovered(true)}
                 onMouseLeave={() => setSubmitHovered(false)}
                 style={{
@@ -207,13 +199,13 @@ export default function Contact() {
                   letterSpacing: '0.16em', color: submitHovered ? '#3F4A42' : '#ffffff',
                   backgroundColor: submitHovered ? '#ffffff' : 'transparent',
                   border: '1px solid rgba(255,255,255,0.8)',
-                  cursor: createContact.isPending ? 'wait' : 'pointer',
+                  cursor: isPending ? 'wait' : 'pointer',
                   textTransform: 'uppercase', transition: 'all 0.25s ease',
-                  fontFamily: '"Inter", sans-serif', opacity: createContact.isPending ? 0.6 : 1,
+                  fontFamily: '"Inter", sans-serif', opacity: isPending ? 0.6 : 1,
                   borderRadius: '6px', width: isMobile ? '100%' : 'auto',
                 }}
               >
-                {createContact.isPending ? 'Submitting...' : 'Send Inquiry'}
+                {isPending ? 'Submitting...' : 'Send Inquiry'}
               </button>
             </form>
           )}

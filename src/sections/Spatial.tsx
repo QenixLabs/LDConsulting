@@ -12,8 +12,6 @@ export default function Spatial() {
   const contentRef = useRef<HTMLDivElement>(null)
   const { isMobile, isTablet } = useViewport()
 
-  const isSmall = isMobile || isTablet
-
   useEffect(() => {
     const section = sectionRef.current
     if (!section) return
